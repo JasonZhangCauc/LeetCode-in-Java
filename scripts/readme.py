@@ -22,6 +22,9 @@ class Config:
     github_pat_url = 'https://github.com/codecly259/LeetCode-in-Java/blob/master/pat-algorithms/'
     leetcode_url = 'https://leetcode-cn.com/problems/'
 
+    ## leetcode_problem_list
+    leetcode_problem_list = 'https://leetcode-cn.com/problemset/all/'
+
 
 class Question:
     """
@@ -29,10 +32,12 @@ class Question:
     """
 
     def __init__(self, id_,
-                 name, url,
+                 name,transName, url,
                  lock, difficulty):
+        # 显示id，显示在页面的题目序号
         self.id_ = id_
         self.title = name
+        self.transTitle = transName
         # the problem description url　问题描述页
         self.url = url
         self.lock = lock  # boolean，锁住了表示需要购买
@@ -60,6 +65,8 @@ class TableInform:
         # this is the element of question
         self.table_item = {}
         self.locked = 0
+        ## 题目翻译字典
+        self.translations = {}
 
     def get_leetcode_problems(self):
         """
@@ -68,16 +75,48 @@ class TableInform:
         """
         # we should look the response data carefully to find law
         # return byte. content type is byte
-        content = requests.get('https://leetcode-cn.com/api/problems/algorithms/').content
+
+        ## 获取翻译  
+        # 1. 请求页面获取 csrftoken 
+        access = requests.get(Config.leetcode_problem_list)
+        cookies = access.cookies
+        csrftoken = cookies['csrftoken']
+        print("csrftoken: " + csrftoken)
+        # 2. 使用 graphsql 查询翻译
+        headers = {'x-csrftoken': csrftoken, 'content-type': 'application/json', 'referer': 'https://leetcode-cn.com/problemset/all/'}
+        payload = {'operationName': 'getQuestionTranslation', 'query': 'query getQuestionTranslation($lang: String) {translations: allAppliedQuestionTranslations(lang: $lang) {title question {questionId randomQuestionUrl} } }'}
+        # print(payload)
+        # 3. 将翻译结果保存到字典里
+        tranContent = requests.post("https://leetcode-cn.com/graphql", cookies=cookies, headers=headers, data=json.dumps(payload, separators=(',', ':'))).content
+        # print(tranContent)
+        translations = json.loads(tranContent)['data']['translations']
+        transDict = {}
+        for tran in translations:
+            transDict[tran['question']['questionId']] = tran['title'].encode('utf-8')
+        self.translations = transDict
+        # print(self.translations)
+
+        ## 获取算法题目列表（名称是应为）
+        proRes = requests.get('https://leetcode-cn.com/api/problems/algorithms/')
+        content = proRes.content
+
+       
         # get all problems
         self.questions = json.loads(content)['stat_status_pairs']
         # print(self.questions)
-        difficultys = ['Easy', 'Medium', 'Hard']
+        difficultys = ['简单', '中等', '困难']
         for i in range(len(self.questions) - 1, -1, -1):
             question = self.questions[i]
+            questionId = str(question['stat']['question_id'])
             name = question['stat']['question__title']
+            transName = name
+            # 如果存在翻译就使用翻译
+            if self.translations.has_key(questionId):
+                transName = self.translations[questionId]
+            
             url = question['stat']['question__title_slug']
             id_ = str(question['stat']['frontend_question_id'])
+
             if int(id_) < 10:
                 id_ = '00' + id_
             elif int(id_) < 100:
@@ -87,7 +126,7 @@ class TableInform:
                 self.locked += 1
             difficulty = difficultys[question['difficulty']['level'] - 1]
             url = Config.leetcode_url + url + '/description/'
-            q = Question(id_, name, url, lock, difficulty)
+            q = Question(id_, name,transName, url, lock, difficulty)
             self.table.append(q.id_)
             self.table_item[q.id_] = q
         return self.table, self.table_item
@@ -231,7 +270,7 @@ class Readme:
 
         with open(file_path, 'a') as f:
             f.write('## LeetCode Solution Table\n')
-            f.write('| ID | Title | Difficulty | JavaScript | Python | C++ | Java |\n')
+            f.write('| ID | 题名 | 难度 | JavaScript | Python | C++ | Java |\n')
             f.write('|:---:' * 7 + '|\n')
             table, table_item = table_instance
             # print(table)
@@ -246,7 +285,7 @@ class Readme:
                     _lock = ''
                 data = {
                     'id': item.id_,
-                    'title': '[{}]({}) {}'.format(item.title, item.url, _lock),
+                    'title': '[{}]({}) {}'.format(item.transTitle, item.url, _lock),
                     'difficulty': item.difficulty,
                     'js': item.javascript if item.javascript else 'To Do',
                     'python': item.python if item.python else 'To Do',

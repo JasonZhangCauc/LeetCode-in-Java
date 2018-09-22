@@ -1,5 +1,5 @@
 # Keep thinking, keep alive
-Until 2018-09-23 01:44:25, I have solved **1** / **716** problems while **0** are still locked.
+Until 2018-09-23 01:55:03, I have solved **1** / **716** problems while **0** are still locked.
 
 Completion statistic: 
 1. JavaScript: 0 
@@ -13,7 +13,7 @@ Note: :lock: means you need to buy a book from LeetCode
 ## LeetCode Solution Table
 | ID | 题名 | 难度 | JavaScript | Python | C++ | Java |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-|001|[两数之和](https://leetcode-cn.com/problems/two-sum/description/) |简单|To Do|To Do|To Do|[Java](https://github.com/codecly259/LeetCode-in-Java/blob/master/algorithms/001.%20Two%20Sum/ Solution.java)|
+|001|[两数之和](https://leetcode-cn.com/problems/two-sum/description/) |简单|To Do|To Do|To Do|[Java](https://github.com/codecly259/LeetCode-in-Java/blob/master/algorithms/001.%20Two%20Sum/Solution.java)|
 |002|[两数相加](https://leetcode-cn.com/problems/add-two-numbers/description/) |中等|To Do|To Do|To Do|To Do|
 |003|[无重复字符的最长子串](https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/description/) |中等|To Do|To Do|To Do|To Do|
 |004|[两个排序数组的中位数](https://leetcode-cn.com/problems/median-of-two-sorted-arrays/description/) |困难|To Do|To Do|To Do|To Do|
